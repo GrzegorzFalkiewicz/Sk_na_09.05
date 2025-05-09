@@ -78,18 +78,18 @@ void MainWindow::advance()
     if (!sym.get_start()) return;
 
     if (okno_sieci->getTryb() == TrybPracySieciowej::Serwer) {
+
+        // 🔒 Zabezpieczenie: czekamy na dane z obiektu
+        if (!odebranoY_w_takcie) {
+            ustawStatusWyrabiania(false); // 🔴 brak danych
+            return; // ⛔ nie robimy taktu bez Y
+        }
+
+        // 🟢 dane dotarły – kontynuujemy
+        ustawStatusWyrabiania(true);
         sym.symulacja();
         okno_sieci->wyslijU(sym.get_ster());
-
-        // ✅ Sprawdzamy "wyrabianie się" tylko gdy symulacja trwa
-        if (working) {
-            if (!odebranoY_w_takcie) {
-                ustawStatusWyrabiania(false); // 🔴 nie dotarło na czas
-            } else {
-                ustawStatusWyrabiania(true);  // 🟢 dotarło OK
-            }
-            odebranoY_w_takcie = false; // reset na kolejną iterację
-        }
+        odebranoY_w_takcie = false; // reset flagi
     }
     else if (okno_sieci->getTryb() == TrybPracySieciowej::Brak) {
         sym.symulacja();
