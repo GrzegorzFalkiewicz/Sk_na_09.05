@@ -77,20 +77,18 @@ void MainWindow::advance()
 {
     if (!sym.get_start()) return;
 
-    static bool wymusStart = true; // pozwól na 1. takt mimo braku Y
-
     if (okno_sieci->getTryb() == TrybPracySieciowej::Serwer) {
 
         if (!odebranoY_w_takcie && !wymusStart) {
-            ustawStatusWyrabiania(false); // 🔴 brak danych – blokujemy takt
+            ustawStatusWyrabiania(false);
             return;
         }
 
-        ustawStatusWyrabiania(true);  // 🟢 dane dotarły lub 1. krok
-        wymusStart = false;           // kolejne kroki wymagają Y
+        ustawStatusWyrabiania(true);
+        wymusStart = false;
         sym.symulacja();
         okno_sieci->wyslijU(sym.get_ster());
-        odebranoY_w_takcie = false;   // resetujemy flagę
+        odebranoY_w_takcie = false;
     }
     else if (okno_sieci->getTryb() == TrybPracySieciowej::Brak) {
         sym.symulacja();
