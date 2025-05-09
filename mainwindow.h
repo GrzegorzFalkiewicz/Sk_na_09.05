@@ -77,5 +77,6 @@ private:
     void wyslijKonfiguracjeSieciowa();
     bool odebranoY_w_takcie = false;
     void ustawStatusWyrabiania(bool ok);
+    bool wymusStart = true;
 };
 #endif // MAINWINDOW_H

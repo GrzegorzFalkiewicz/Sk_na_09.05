@@ -77,19 +77,20 @@ void MainWindow::advance()
 {
     if (!sym.get_start()) return;
 
+    static bool wymusStart = true; // pozwól na 1. takt mimo braku Y
+
     if (okno_sieci->getTryb() == TrybPracySieciowej::Serwer) {
 
-        // 🔒 Zabezpieczenie: czekamy na dane z obiektu
-        if (!odebranoY_w_takcie) {
-            ustawStatusWyrabiania(false); // 🔴 brak danych
-            return; // ⛔ nie robimy taktu bez Y
+        if (!odebranoY_w_takcie && !wymusStart) {
+            ustawStatusWyrabiania(false); // 🔴 brak danych – blokujemy takt
+            return;
         }
 
-        // 🟢 dane dotarły – kontynuujemy
-        ustawStatusWyrabiania(true);
+        ustawStatusWyrabiania(true);  // 🟢 dane dotarły lub 1. krok
+        wymusStart = false;           // kolejne kroki wymagają Y
         sym.symulacja();
         okno_sieci->wyslijU(sym.get_ster());
-        odebranoY_w_takcie = false; // reset flagi
+        odebranoY_w_takcie = false;   // resetujemy flagę
     }
     else if (okno_sieci->getTryb() == TrybPracySieciowej::Brak) {
         sym.symulacja();
@@ -309,10 +310,13 @@ void MainWindow::on_StartStop_clicked()
 {
     if (okno_sieci->getTryb() == TrybPracySieciowej::Klient)
         return;
+
     sym.StartStop();
     working = !working;
 
     if (working) {
+        wymusStart = true;           // 🔁 pozwól na 1. krok bez Y
+        odebranoY_w_takcie = false;  // 🔁 reset flagi odbioru
         timer->start();
         if (okno_sieci->getTryb() == TrybPracySieciowej::Serwer)
             okno_sieci->wyslijStartStop(true);
@@ -324,17 +328,23 @@ void MainWindow::on_StartStop_clicked()
 }
 void MainWindow::on_Reset_clicked()
 {
-    if(working)on_StartStop_clicked();
-    if(!working)timer->stop();
+    if (working) on_StartStop_clicked();
+
+    timer->stop();
     sym.Setup();
     sym.reset();
-    x=0;
+    x = 0;
+
+    wymusStart = true;           // 🔁 restart wymuszenia
+    odebranoY_w_takcie = false;  // 🔁 reset flagi
+
     usunSerie();
     utworzSerie();
     ustawNazwy();
     resetMaksMin();
     dodajSerie();
     utworzOsie();
+
     ui->ChartUchyb->setChart(chart1);
     ui->Chartwartosci->setChart(chart2);
     ui->ChartSterowanie->setChart(chart3);
