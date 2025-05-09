@@ -383,6 +383,14 @@ void MainWindow::odebranoY(double y)
 void MainWindow::odebranoU(double u)
 {
     qDebug() << "ODEBRANO U:" << u;
+
+    // 🔁 Uruchom symulację tylko przy pierwszym U
+    if (!working) {
+        sym.StartStop();    // wewnętrzny przełącznik symulatora
+        working = true;
+        timer->start();     // uruchom timer dla advance()
+    }
+
     sym.symulujARX(u);
     double y = sym.get_Y();
     qDebug() << "WYSYŁAM Y:" << y;
