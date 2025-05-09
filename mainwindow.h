@@ -47,6 +47,7 @@ private slots:
     void zerwanoPolaczenie();
     void on_btnNetwork_clicked();
     void ustawTrybSieciowy(bool trybSieciowy, bool jestRegulatorem);
+    void ustawStatusPolaczenia(QString tekst, QColor kolor);
 private:
     Ui::MainWindow *ui;
     QTimer *timer;
@@ -74,5 +75,7 @@ private:
     void ustawNazwy();
     void ustawZakres();
     void wyslijKonfiguracjeSieciowa();
+    bool odebranoY_w_takcie = false;
+    void ustawStatusWyrabiania(bool ok);
 };
 #endif // MAINWINDOW_H

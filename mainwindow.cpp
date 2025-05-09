@@ -10,6 +10,7 @@ MainWindow::MainWindow(QWidget *parent)
     okno_sieci = new dialog_sieciowy(this);
     okno_sieci->setAttribute(Qt::WA_DeleteOnClose, false);
     okno_sieci->setModal(false);
+    ustawStatusPolaczenia("Brak połączenia", Qt::gray);
     utworzSerie();
     sym.Setup();
     connect(timer, SIGNAL(timeout()), this, SLOT(advance()));
@@ -45,13 +46,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(okno_sieci, &dialog_sieciowy::stopSymulacjiZdalnej, this, &MainWindow::zdalnieStopuj);
     connect(okno_sieci, &dialog_sieciowy::polaczono, this, [this](bool jestSerwerem) {
         ustawTrybSieciowy(true, jestSerwerem);
-    });
-    connect(okno_sieci, &dialog_sieciowy::polaczono, this, [this](bool jestSerwerem) {
-        ustawTrybSieciowy(true, jestSerwerem);
+        ustawStatusPolaczenia("Połączono", Qt::green);
     });
 
     connect(okno_sieci, &dialog_sieciowy::rozlaczono, this, [this]() {
         ustawTrybSieciowy(false, false);
+        ustawStatusPolaczenia("Rozłączono", Qt::red);
     });
     connect(okno_sieci, &dialog_sieciowy::zmienGUI, this, [=](bool jestemRegulatorem) {
         ustawTrybSieciowy(true, jestemRegulatorem); // blokuj GUI natychmiast
@@ -76,10 +76,19 @@ void MainWindow::sig()
 void MainWindow::advance()
 {
     if(!sym.get_start()) return;
-    if(okno_sieci->getTryb() == TrybPracySieciowej::Serwer)
-    {
+    if (okno_sieci->getTryb() == TrybPracySieciowej::Serwer) {
         sym.symulacja();
         okno_sieci->wyslijU(sym.get_ster());
+
+        // 🧠 Sprawdź, czy poprzedni Y dotarł przed tym taktem
+        if (!odebranoY_w_takcie) {
+            ustawStatusWyrabiania(false); // czerwony
+        } else {
+            ustawStatusWyrabiania(true); // zielony
+        }
+
+        // 🔁 reset flagi – oczekujemy na Y w następnym takcie
+        odebranoY_w_takcie = false;
     }
     else if(okno_sieci->getTryb() == TrybPracySieciowej::Brak)
     {
@@ -369,11 +378,15 @@ void MainWindow::on_edytujARX_clicked()
 void MainWindow::odebranoY(double y)
 {
     sym.set_Y(y);
+    odebranoY_w_takcie = true;
 }
 void MainWindow::odebranoU(double u)
 {
+    qDebug() << "ODEBRANO U:" << u;
     sym.symulujARX(u);
-    okno_sieci->wyslijY(sym.get_Y());
+    double y = sym.get_Y();
+    qDebug() << "WYSYŁAM Y:" << y;
+    okno_sieci->wyslijY(y);
 }
 void MainWindow::odebranoKonfiguracja(KonfiguracjaSieciowa konf)
 {
@@ -471,4 +484,23 @@ void MainWindow::ustawTrybSieciowy(bool trybSieciowy, bool jestRegulatorem)
     }
 
     qApp->processEvents();
+}
+
+void MainWindow::ustawStatusPolaczenia(QString tekst, QColor kolor)
+{
+    QPalette paleta = ui->lblSiec->palette();
+    paleta.setColor(QPalette::Window, kolor);
+    ui->lblSiec->setAutoFillBackground(true);
+    ui->lblSiec->setPalette(paleta);
+    ui->lblSiec->update();
+    ui->label_13->setText(tekst);
+}
+
+void MainWindow::ustawStatusWyrabiania(bool ok)
+{
+    QPalette paleta = ui->lampkaWyrabiania->palette();
+    paleta.setColor(QPalette::Window, ok ? Qt::green : Qt::red);
+    ui->lampkaWyrabiania->setAutoFillBackground(true);
+    ui->lampkaWyrabiania->setPalette(paleta);
+    ui->lampkaWyrabiania->update();
 }

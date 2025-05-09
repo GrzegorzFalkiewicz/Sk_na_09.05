@@ -29,10 +29,27 @@ dialog_sieciowy::~dialog_sieciowy()
 }
 void dialog_sieciowy::nowePolaczenie()
 {
-    if (gniazdo) gniazdo->deleteLater();
+    if (!serwer) return;
+
+    // 🧹 Usuń poprzednie gniazdo jeśli istnieje
+    if (gniazdo) {
+        gniazdo->disconnectFromHost();
+        gniazdo->deleteLater();
+        gniazdo = nullptr;
+    }
+
     gniazdo = serwer->nextPendingConnection();
+
     connect(gniazdo, &QTcpSocket::readyRead, this, &dialog_sieciowy::odebranoDane);
-    connect(gniazdo, &QTcpSocket::disconnected, this, &dialog_sieciowy::rozlaczono);
+
+    connect(gniazdo, &QTcpSocket::disconnected, this, [=]() {
+        ustawStatusPolaczenia("Klient rozłączony", Qt::red);
+        ui->KontrolkaStatusu->setStyleSheet("background-color: red; border-radius: 8px;");
+        gniazdo->deleteLater();
+        gniazdo = nullptr;
+        emit rozlaczono();
+    });
+
     QString ip = gniazdo->peerAddress().toString();
     ip = ip.replace("::ffff:", "");
     ustawStatusPolaczenia("Połączono z klientem: " + ip, Qt::green);
@@ -63,21 +80,43 @@ void dialog_sieciowy::ustawTryb(TrybPracySieciowej t)
 }
 void dialog_sieciowy::on_btnPolacz_clicked()
 {
+    // 🔴 ROZŁĄCZENIE – jeśli serwer już działa (brak klienta)
+    if (serwer && serwer->isListening()) {
+        serwer->close();
+        delete serwer;
+        serwer = nullptr;
+        ustawTryb(TrybPracySieciowej::Brak);
+        ustawStatusPolaczenia("Rozłączono", Qt::red);
+        ui->btnPolacz->setText("Połącz");
+        emit rozlaczono();
+        return;
+    }
+
+    // 🔴 ROZŁĄCZENIE – jeśli klient połączony
     if (gniazdo && gniazdo->state() == QAbstractSocket::ConnectedState) {
         przejdzWLokalnyTryb();
         ui->btnPolacz->setText("Połącz");
         return;
     }
 
+    // 🟡 WALIDACJA portu
     int port = ui->linePort->text().toInt();
     if (port < 1024 || port > 49151) {
         QMessageBox::warning(this, "Błąd", "Port musi być w zakresie 1024-49151");
         return;
     }
 
+    // 🟢 TRYB SERWER
     if (ui->radioSerwer->isChecked()) {
         ustawTryb(TrybPracySieciowej::Serwer);
-        emit zmienGUI(true);  // Tylko zmiana GUI
+        emit zmienGUI(true);  // Zmiana GUI natychmiast
+
+        // Jeśli istniał stary serwer – usuń
+        if (serwer) {
+            serwer->close();
+            delete serwer;
+            serwer = nullptr;
+        }
 
         serwer = new QTcpServer(this);
         if (!serwer->listen(QHostAddress::Any, port)) {
@@ -85,24 +124,35 @@ void dialog_sieciowy::on_btnPolacz_clicked()
             ustawTryb(TrybPracySieciowej::Brak);
             return;
         }
+
         connect(serwer, &QTcpServer::newConnection, this, &dialog_sieciowy::nowePolaczenie);
         ui->btnPolacz->setText("Rozłącz");
-    } else {
+    }
+
+    // 🟢 TRYB KLIENT
+    else {
         ustawTryb(TrybPracySieciowej::Klient);
-        emit zmienGUI(false);  // Tylko zmiana GUI
+        emit zmienGUI(false);  // Zmiana GUI natychmiast
 
         gniazdo = new QTcpSocket(this);
         connect(gniazdo, &QTcpSocket::connected, this, [=]() {
             ui->btnPolacz->setText("Rozłącz");
             ui->btnReady->setVisible(true);
             ustawStatusPolaczenia("Połączono z serwerem", Qt::green);
-            emit polaczono(false); // TUTAJ dopiero prawdziwe połączenie
+            emit polaczono(false); // Tylko po nawiązaniu połączenia
         });
         connect(gniazdo, &QTcpSocket::readyRead, this, &dialog_sieciowy::odebranoDane);
-        connect(gniazdo, &QTcpSocket::disconnected, this, &dialog_sieciowy::rozlaczono);
+        connect(gniazdo, &QTcpSocket::disconnected, this, [=]() {
+            ustawStatusPolaczenia("Rozłączono przez serwer", Qt::red);
+            ui->btnPolacz->setText("Połącz");
+            ustawTryb(TrybPracySieciowej::Brak);
+            emit rozlaczono();
+        });
+
         gniazdo->connectToHost(ui->lineIP->text(), port);
     }
 }
+
 void dialog_sieciowy::odebranoDane()
 {
     QDataStream in(gniazdo);

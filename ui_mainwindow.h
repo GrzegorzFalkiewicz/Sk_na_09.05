@@ -33,15 +33,21 @@ class Ui_MainWindow
 {
 public:
     QWidget *centralwidget;
-    QGridLayout *gridLayout_5;
+    QGridLayout *gridLayout_6;
     QVBoxLayout *verticalLayout_15;
     QVBoxLayout *verticalLayout_16;
     QHBoxLayout *horizontalLayout_8;
     QPushButton *StartStop;
     QPushButton *Reset;
-    QDoubleSpinBox *Spbox_inter;
+    QHBoxLayout *horizontalLayout_4;
     QLabel *label_2;
+    QDoubleSpinBox *Spbox_inter;
+    QHBoxLayout *horizontalLayout;
+    QLabel *lampkaWyrabiania;
     QPushButton *btnNetwork;
+    QGridLayout *gridLayout_5;
+    QLabel *label_13;
+    QLabel *lblSiec;
     QFrame *frame;
     QHBoxLayout *horizontalLayout_7;
     QVBoxLayout *verticalLayout_12;
@@ -100,8 +106,8 @@ public:
         MainWindow->resize(1189, 673);
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName("centralwidget");
-        gridLayout_5 = new QGridLayout(centralwidget);
-        gridLayout_5->setObjectName("gridLayout_5");
+        gridLayout_6 = new QGridLayout(centralwidget);
+        gridLayout_6->setObjectName("gridLayout_6");
         verticalLayout_15 = new QVBoxLayout();
         verticalLayout_15->setSpacing(3);
         verticalLayout_15->setObjectName("verticalLayout_15");
@@ -120,27 +126,57 @@ public:
 
         horizontalLayout_8->addWidget(Reset);
 
+
+        verticalLayout_16->addLayout(horizontalLayout_8);
+
+        horizontalLayout_4 = new QHBoxLayout();
+        horizontalLayout_4->setObjectName("horizontalLayout_4");
+        label_2 = new QLabel(centralwidget);
+        label_2->setObjectName("label_2");
+        label_2->setAlignment(Qt::AlignmentFlag::AlignCenter);
+
+        horizontalLayout_4->addWidget(label_2);
+
         Spbox_inter = new QDoubleSpinBox(centralwidget);
         Spbox_inter->setObjectName("Spbox_inter");
         Spbox_inter->setMinimum(0.050000000000000);
         Spbox_inter->setSingleStep(0.050000000000000);
         Spbox_inter->setValue(0.100000000000000);
 
-        horizontalLayout_8->addWidget(Spbox_inter);
+        horizontalLayout_4->addWidget(Spbox_inter);
 
 
-        verticalLayout_16->addLayout(horizontalLayout_8);
+        verticalLayout_16->addLayout(horizontalLayout_4);
 
-        label_2 = new QLabel(centralwidget);
-        label_2->setObjectName("label_2");
-        label_2->setAlignment(Qt::AlignmentFlag::AlignCenter);
+        horizontalLayout = new QHBoxLayout();
+        horizontalLayout->setObjectName("horizontalLayout");
+        lampkaWyrabiania = new QLabel(centralwidget);
+        lampkaWyrabiania->setObjectName("lampkaWyrabiania");
 
-        verticalLayout_16->addWidget(label_2);
+        horizontalLayout->addWidget(lampkaWyrabiania);
 
         btnNetwork = new QPushButton(centralwidget);
         btnNetwork->setObjectName("btnNetwork");
 
-        verticalLayout_16->addWidget(btnNetwork);
+        horizontalLayout->addWidget(btnNetwork);
+
+        gridLayout_5 = new QGridLayout();
+        gridLayout_5->setObjectName("gridLayout_5");
+        label_13 = new QLabel(centralwidget);
+        label_13->setObjectName("label_13");
+
+        gridLayout_5->addWidget(label_13, 0, 0, 1, 1);
+
+        lblSiec = new QLabel(centralwidget);
+        lblSiec->setObjectName("lblSiec");
+
+        gridLayout_5->addWidget(lblSiec, 0, 1, 1, 1);
+
+
+        horizontalLayout->addLayout(gridLayout_5);
+
+
+        verticalLayout_16->addLayout(horizontalLayout);
 
 
         verticalLayout_15->addLayout(verticalLayout_16);
@@ -409,7 +445,7 @@ public:
         verticalLayout_15->setStretch(2, 3);
         verticalLayout_15->setStretch(3, 2);
 
-        gridLayout_5->addLayout(verticalLayout_15, 0, 0, 1, 1);
+        gridLayout_6->addLayout(verticalLayout_15, 0, 0, 1, 1);
 
         verticalLayout = new QVBoxLayout();
         verticalLayout->setSpacing(2);
@@ -438,7 +474,7 @@ public:
         verticalLayout->setStretch(0, 3);
         verticalLayout->setStretch(1, 2);
 
-        gridLayout_5->addLayout(verticalLayout, 0, 1, 1, 1);
+        gridLayout_6->addLayout(verticalLayout, 0, 1, 1, 1);
 
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
@@ -459,8 +495,11 @@ public:
         MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "SUAR", nullptr));
         StartStop->setText(QCoreApplication::translate("MainWindow", "Start/Stop", nullptr));
         Reset->setText(QCoreApplication::translate("MainWindow", "Reset", nullptr));
-        label_2->setText(QCoreApplication::translate("MainWindow", "                                                                                      Interwa\305\202", nullptr));
+        label_2->setText(QCoreApplication::translate("MainWindow", "Interwa\305\202", nullptr));
+        lampkaWyrabiania->setText(QString());
         btnNetwork->setText(QCoreApplication::translate("MainWindow", "Sie\304\207", nullptr));
+        label_13->setText(QString());
+        lblSiec->setText(QString());
         label->setText(QCoreApplication::translate("MainWindow", "Generator", nullptr));
         label_12->setText(QCoreApplication::translate("MainWindow", "S", nullptr));
         label_5->setText(QCoreApplication::translate("MainWindow", "T", nullptr));
