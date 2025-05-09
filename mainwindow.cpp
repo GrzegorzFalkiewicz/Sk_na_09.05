@@ -75,26 +75,27 @@ void MainWindow::sig()
 }
 void MainWindow::advance()
 {
-    if(!sym.get_start()) return;
+    if (!sym.get_start()) return;
+
     if (okno_sieci->getTryb() == TrybPracySieciowej::Serwer) {
         sym.symulacja();
         okno_sieci->wyslijU(sym.get_ster());
 
-        // 🧠 Sprawdź, czy poprzedni Y dotarł przed tym taktem
-        if (!odebranoY_w_takcie) {
-            ustawStatusWyrabiania(false); // czerwony
-        } else {
-            ustawStatusWyrabiania(true); // zielony
+        // ✅ Sprawdzamy "wyrabianie się" tylko gdy symulacja trwa
+        if (working) {
+            if (!odebranoY_w_takcie) {
+                ustawStatusWyrabiania(false); // 🔴 nie dotarło na czas
+            } else {
+                ustawStatusWyrabiania(true);  // 🟢 dotarło OK
+            }
+            odebranoY_w_takcie = false; // reset na kolejną iterację
         }
-
-        // 🔁 reset flagi – oczekujemy na Y w następnym takcie
-        odebranoY_w_takcie = false;
     }
-    else if(okno_sieci->getTryb() == TrybPracySieciowej::Brak)
-    {
+    else if (okno_sieci->getTryb() == TrybPracySieciowej::Brak) {
         sym.symulacja();
     }
-    if(sym.get_ite()>42.0) {
+
+    if (sym.get_ite() > 42.0) {
         x = (sym.get_ite() - 38.0);
         series->remove(0);
         series2->remove(0);
@@ -104,6 +105,7 @@ void MainWindow::advance()
         series6->remove(0);
         series7->remove(0);
     }
+
     dodacDoSerii();
     resetMaksMin();
     ustawMin();
