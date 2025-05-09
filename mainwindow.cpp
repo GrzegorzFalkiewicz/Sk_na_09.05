@@ -372,8 +372,11 @@ void MainWindow::odebranoY(double y)
 }
 void MainWindow::odebranoU(double u)
 {
+    qDebug() << "ODEBRANO U:" << u;
     sym.symulujARX(u);
-    okno_sieci->wyslijY(sym.get_Y());
+    double y = sym.get_Y();
+    qDebug() << "WYSYŁAM Y:" << y;
+    okno_sieci->wyslijY(y);
 }
 void MainWindow::odebranoKonfiguracja(KonfiguracjaSieciowa konf)
 {

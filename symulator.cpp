@@ -1,4 +1,6 @@
 #include "symulator.h"
+#include "qdebug.h"
+#include "qlogging.h"
 
 void Symulator::reset() { pid.reset(); }
 
@@ -106,10 +108,16 @@ void Symulator::set_stala(double s){gen1.set_A(s);gen2.set_S(s);gen3.set_S(s);};
 void Symulator::symulujARX(double u)
 {
     y_pid = u; // u = wartość z regulatora
-    arx.symuluj(u);
+
+    try {
+        arx.symuluj(u);
+    } catch (...) {
+        qDebug() << "BŁĄD: arx.symuluj(u) rzucił wyjątek!";
+        return;
+    }
+
     ite++;
 }
-
 void Symulator::set_Y(double y)
 {
     arx.Set_Y(y);
